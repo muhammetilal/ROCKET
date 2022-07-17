@@ -1,0 +1,48 @@
+#include <SoftwareSerial.h>
+SoftwareSerial FixSerial(10, 11);
+
+#include "I2Cdev.h" //I2C kütüphanesi
+#include "MPU6050.h" //Mpu6050 kütüphanesi
+#include "Wire.h"
+MPU6050 accelgyro; // Mpu6050 sensör tanımlama
+int16_t ax, ay, az; //ivme tanımlama
+int16_t gx, gy, gz; //gyro tanımlama
+
+int degerx;
+int degery;
+int degerz;
+
+
+byte i = 0;
+#define M0 7
+#define M1 6
+int x=5;
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+accelgyro.initialize();
+  pinMode(M0, OUTPUT);
+  pinMode(M1, OUTPUT);
+  digitalWrite(M0, LOW);
+  digitalWrite(M1, LOW);
+  FixSerial.begin(9600);
+}
+void loop() {
+  FixSerial.write((byte)0x00); //Alıcı Adresi HIGH
+  FixSerial.write(0x3f);       //Alıcı Adresi LOW
+  FixSerial.write(0x17);       //Alıcı Kanalı =0x17=23    (410M+23=433 MHz)
+   
+
+  delay(5);
+
+accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz); // ivme ve gyro değerlerini okuma
+  
+//açısal ivmeleri ve gyro değerlerini ekrana yazdırma
+  degerx = map(ax,-17000,17000,0,180);
+  degery = map(ay,-17000,17000,0,180);
+  degerz= map(az,-17000,17000,0,180);
+Serial.print(degerx); Serial.print("    ");
+Serial.print(degery); Serial.print("    ");
+Serial.print(degerz); Serial.println("     ");
+    FixSerial.println(degerx);
+}
